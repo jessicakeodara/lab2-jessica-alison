@@ -19,50 +19,53 @@ def H_approx(n):
     gamma = 0.57721566490153286060651209008240243104215933593992
     return gamma + math.log(n) + 0.5/n - 1./(12*n**2) + 1./(120*n**4)
 
+    pyplot.loglog()
+
 def do_zipf_plot(counts, label=""):
     fig = pyplot.figure()
 
     # obtain C(w), R(w), and K(w)
     count_freq = []
-    for elem, count in counts.most_common():  # wait i dont know for sure
-        count_freq.append(count)
-    print("count_freq: " + str(count_freq))
-    
-    rel_freq = []
-    for f in count_freq:
-        rel_freq.append(f / counts.total())
+    expected_freq = []
 
     counts_size = len(counts.items())
     rank = list(range(1, counts_size+1))
 
-
-    print("rank: " + str(rank))
-    print("rel_freq: " + str(rel_freq))
+    for elem, count in counts.most_common():  # wait i dont know for sure
+        count_freq.append(count)
+        expected_freq.append(count/)
+    
+    rel_freq = []
+    for f in count_freq:
+        rel_freq.append(f / counts.total())
         
     # Create log plot of R(w) vs. K(w)
-    pyplot.loglog(rank, rel_freq)
+    pyplot.loglog(rank, rel_freq, label="Zipf's Law")
     pyplot.xlabel("log(rank)")
     pyplot.ylabel("log(freq)")
-    pyplot.suptitle(label)
+    pyplot.suptitle("Zipf's Law for " + label)
+    pyplot.legend(loc="lower left")
 
     pyplot.savefig('zipf_{}.png'.format(label))
+
+
     pyplot.close()
     
-
 
 def read_all(directory, extension=None):
     new_counter = Counter()
 
     for root, dirs, files in os.walk(directory):
-        print("dirs" + str(dirs))
-        for dir in dirs:
-            for file in files:
-                if extension is None:
-                    file_counter = read_one(file)
-                if os.path.splitext(dir + file)[1] == extension:
-                    file_counter = read_one(file)
+        print("dirs: " + str(dirs))
+        print("root: " + str(root))
+        print("files: " + str(files))
+        for file in files:
+            if extension is None:
+                file_counter = read_one(root + "/" + file)
+            if os.path.splitext(root + file)[1] == extension:
+                file_counter = read_one(root + "/" + file)
 
-                new_counter += file_counter
+            new_counter += file_counter
     return new_counter
     
 
@@ -82,7 +85,6 @@ def read_one(fname):
 
 def plot_all(directory):
     counts = read_all(directory, ".txt")
-    print(counts)
     do_zipf_plot(counts, os.path.basename(directory))
 
 def plot_one(fname):
