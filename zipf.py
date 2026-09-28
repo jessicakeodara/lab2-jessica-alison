@@ -19,7 +19,6 @@ def H_approx(n):
     gamma = 0.57721566490153286060651209008240243104215933593992
     return gamma + math.log(n) + 0.5/n - 1./(12*n**2) + 1./(120*n**4)
 
-    pyplot.loglog()
 
 def do_zipf_plot(counts, label=""):
     fig = pyplot.figure()
@@ -28,27 +27,31 @@ def do_zipf_plot(counts, label=""):
     count_freq = []
     expected_freq = []
 
-    counts_size = len(counts.items())
-    rank = list(range(1, counts_size+1))
-
-    for elem, count in counts.most_common():  # wait i dont know for sure
+    types = len(counts.items())
+    tokens = counts.total()
+    harmonic = H_approx(types)
+    scaling = tokens / harmonic
+    
+    i = 0
+    rank = list(range(1, types+1))
+    for elem, count in counts.most_common():
         count_freq.append(count)
-        expected_freq.append(count/)
+        expected_freq.append((scaling / rank[i]) / 10 ** 4.5)
+        i += 1
     
     rel_freq = []
     for f in count_freq:
-        rel_freq.append(f / counts.total())
+        rel_freq.append(f / tokens)
         
     # Create log plot of R(w) vs. K(w)
-    pyplot.loglog(rank, rel_freq, label="Zipf's Law")
+    pyplot.loglog(rank, rel_freq, label="Empirical")
+    pyplot.loglog(rank, expected_freq, label="Expected")
     pyplot.xlabel("log(rank)")
     pyplot.ylabel("log(freq)")
     pyplot.suptitle("Zipf's Law for " + label)
     pyplot.legend(loc="lower left")
 
     pyplot.savefig('zipf_{}.png'.format(label))
-
-
     pyplot.close()
     
 
@@ -94,6 +97,7 @@ def plot_one(fname):
     do_zipf_plot(counts, label=title)
 
 def main():
+    plot_one('/courses/cs159/data/gutenberg/carroll-alice.txt')
     plot_one('/courses/cs159/data/gutenberg/carroll-alice.txt')
     plot_all('/courses/cs159/data/gutenberg')
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from spacy.lang.en import English
+nlp = English(pipeline=[], max_length=5000000)
 
 import argparse
 from lxml import etree
@@ -19,10 +21,31 @@ def get_examples(args, attribute, value):
     pass
 
 def get_unigrams(doc, do_lower=True): 
-    pass
+    unigrams = []
+    for token in doc:
+        if do_lower:
+            token 
+        
 
-def get_bigrams(doc):
-    pass
+
+
+def get_bigrams(doc, do_lower=True):
+    bigrams = p[]
+    if not do_lower:
+        for i in range(len(doc)):
+            if i+1 < len(doc):
+                token = doc[i]
+                next_token = doc[i+1]
+                curr_bigram = [token, next_token]
+                bigrams.append(curr_bigram)
+    
+    # if lower
+    for i in range(len(doc)):
+        if i+1 < len(doc):
+            token = doc[i].lower()
+            next_token = doc[i+1].lower()
+            curr_bigram = [token, next_token]
+            bigrams.append(curr_bigram)
 
 def get_trigrams(doc):
     pass
