@@ -18,37 +18,57 @@ def do_xml_parse(fp, tag):
         elem.clear()
 
 def get_examples(args, attribute, value):
-    pass
+    examples = args.examples
+
+    example = do_xml_parse(examples, )
+    
+
 
 def get_unigrams(doc, do_lower=True): 
     unigrams = []
     for token in doc:
         if do_lower:
-            token 
+            unigrams.append(token.text.lower())
+        else:
+           unigrams.append(token.text)  
+    
+    return unigrams
         
 
-
-
 def get_bigrams(doc, do_lower=True):
-    bigrams = p[]
-    if not do_lower:
-        for i in range(len(doc)):
-            if i+1 < len(doc):
-                token = doc[i]
-                next_token = doc[i+1]
-                curr_bigram = [token, next_token]
-                bigrams.append(curr_bigram)
-    
-    # if lower
-    for i in range(len(doc)):
-        if i+1 < len(doc):
-            token = doc[i].lower()
-            next_token = doc[i+1].lower()
-            curr_bigram = [token, next_token]
-            bigrams.append(curr_bigram)
+    bigrams = []
 
-def get_trigrams(doc):
-    pass
+    i = 0
+    while i+1 < len(doc):
+        token = doc[i]
+        next_token = doc[i+1]
+        if do_lower:
+            curr_bigram = (token.text.lower(), next_token.text.lower())
+            bigrams.append(curr_bigram)
+        else:
+            curr_bigram = (token.text, next_token.text)
+            bigrams.append(curr_bigram)
+        i += 1
+    
+    return bigrams
+
+def get_trigrams(doc, do_lower=True):
+    trigrams = []
+
+    i = 0
+    while i+2 < len(doc):
+        token = doc[i]
+        second_tok = doc[i+1]
+        third_tok = doc[i+2]
+        if do_lower:
+            curr_trigram = (token.text.lower(), second_tok.text.lower(), third_tok.text.lower())
+            trigrams.append(curr_trigram)
+        else:
+            curr_trigram = (token.text, second_tok.text, third_tok.txt)
+            trigrams.append(curr_trigram)
+        i += 1
+    
+    return trigrams
 
 def compare(train, test, unique=False):
     pass
