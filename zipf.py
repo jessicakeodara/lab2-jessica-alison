@@ -8,6 +8,7 @@ from collections import Counter
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot
+import random
 
 
 def H_approx(n):
@@ -25,7 +26,7 @@ def do_zipf_plot(counts, label=""):
 
     # obtain C(w), R(w), and K(w)
     count_freq = []
-    expected_freq = []
+    expected_rel_freq = []
 
     types = len(counts.items())
     tokens = counts.total()
@@ -36,7 +37,7 @@ def do_zipf_plot(counts, label=""):
     rank = list(range(1, types+1))
     for elem, count in counts.most_common():
         count_freq.append(count)
-        expected_freq.append((scaling / rank[i]) / 10 ** 4.5)
+        expected_rel_freq.append((scaling / rank[i]) / tokens)
         i += 1
     
     rel_freq = []
@@ -45,7 +46,7 @@ def do_zipf_plot(counts, label=""):
         
     # Create log plot of R(w) vs. K(w)
     pyplot.loglog(rank, rel_freq, label="Empirical")
-    pyplot.loglog(rank, expected_freq, label="Expected")
+    pyplot.loglog(rank, expected_rel_freq, label="Theoretical")
     pyplot.xlabel("log(rank)")
     pyplot.ylabel("log(freq)")
     pyplot.suptitle("Zipf's Law for " + label)
@@ -59,9 +60,6 @@ def read_all(directory, extension=None):
     new_counter = Counter()
 
     for root, dirs, files in os.walk(directory):
-        print("dirs: " + str(dirs))
-        print("root: " + str(root))
-        print("files: " + str(files))
         for file in files:
             if extension is None:
                 file_counter = read_one(root + "/" + file)
@@ -71,9 +69,21 @@ def read_all(directory, extension=None):
             new_counter += file_counter
     return new_counter
     
+    
 
-def read_one(fname):
-    # Read the file
+def read_one(fname, rdm=False):
+    # Write file with random characters    
+    if rdm:
+        with open(fname, 'w', encoding='latin1') as fp: 
+            rdm_chars = []
+            for i in range(10**5):
+                rdm_char = random.choice("abcdefghijklmnopqrstuvwxyz ")
+                rdm_chars.append(rdm_char)
+            text = "".join(rdm_chars)
+            fp.write(text)
+
+    # Read file
+    text = ""
     with open(fname, 'r', encoding='latin1') as fp: 
         text = fp.read()
     
@@ -89,8 +99,11 @@ def read_one(fname):
 def plot_all(directory):
     counts = read_all(directory, ".txt")
     do_zipf_plot(counts, os.path.basename(directory))
+    print("Number of Tokens (Gutenberg): " + str(counts.total()))
 
-def plot_one(fname):
+def plot_one(fname, random=False):
+    if random:
+        counts = read_one(fname, random)
     counts = read_one(fname)
     title = os.path.splitext(os.path.basename(fname))[0]
 
@@ -98,8 +111,14 @@ def plot_one(fname):
 
 def main():
     plot_one('/courses/cs159/data/gutenberg/carroll-alice.txt')
-    plot_one('/courses/cs159/data/gutenberg/carroll-alice.txt')
+    # plot_one('/courses/cs159/data/gutenberg/bryant-stories.txt')
+    # plot_one('/courses/cs159/data/gutenberg/edgeworth-parents.txt')
+    # plot_one('/courses/cs159/data/gutenberg/chesterton-ball.txt')
+    # plot_one('/courses/cs159/data/gutenberg/blake-poems.txt')
+    # plot_one('/courses/cs159/data/gutenberg/austen-sense.txt')
     plot_all('/courses/cs159/data/gutenberg')
+
+    plot_one('random.txt', True)
 
 
 if __name__ == "__main__":

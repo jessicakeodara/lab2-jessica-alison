@@ -5,6 +5,7 @@ nlp = English(pipeline=[], max_length=5000000)
 import argparse
 from lxml import etree
 from collections import Counter
+import html
 
 
 def do_xml_parse(fp, tag):
@@ -18,12 +19,23 @@ def do_xml_parse(fp, tag):
         elem.clear()
 
 def get_examples(args, attribute, value):
-    examples = args.examples
+    counter = Counter()
 
-    example = do_xml_parse(examples, )
+    # go through each example after parsing
+    for elem in do_xml_parse(args, ("example",)):
+        print("Elem Attribute " + str(elem.attrib[attribute]))
+        if elem.attrib[attribute] == value:
+            doc = nlp(html.unescape(elem.text))
+            print("Elem Text" + str(elem.text))
+            print(doc)
+            unigrams = get_unigrams(doc)
+            print("Unigrams: " + str(unigrams))
+            for unigram in unigrams:
+                counter[unigram] += 1
+
+    return counter
+
     
-
-
 def get_unigrams(doc, do_lower=True): 
     unigrams = []
     for token in doc:
@@ -93,7 +105,13 @@ def do_experiment(args, attribute, train_value, test_value):
     print()
 
 def main(args):
-    pass
+    # the path: /courses/cs159/data/patronize/patronize_sample.xml
+
+    counter = get_examples(args.examples, 'condescension', 'true')
+    # print(counter.most_common(20))
+    print("the: " + counter['the'])
+    print("opportunity: " + counter['opportunity'])
+    print("zero: " + counter['zero'])
 
 
 if __name__ == '__main__':
@@ -105,5 +123,4 @@ if __name__ == '__main__':
                         help="Content of examples")
 
     args = parser.parse_args()
-
     main(args)
