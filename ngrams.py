@@ -23,13 +23,9 @@ def get_examples(args, attribute, value):
 
     # go through each example after parsing
     for elem in do_xml_parse(args, ("example",)):
-        print("Elem Attribute " + str(elem.attrib[attribute]))
         if elem.attrib[attribute] == value:
             doc = nlp(html.unescape(elem.text))
-            print("Elem Text" + str(elem.text))
-            print(doc)
             unigrams = get_unigrams(doc)
-            print("Unigrams: " + str(unigrams))
             for unigram in unigrams:
                 counter[unigram] += 1
 
@@ -48,42 +44,48 @@ def get_unigrams(doc, do_lower=True):
         
 
 def get_bigrams(doc, do_lower=True):
-    bigrams = []
+    unigram_1 = get_unigrams(doc)
+    unigram_1.pop(len(unigram_1)-1)
+    unigram_2 = get_unigrams(doc)
+    unigram_2.pop(0)
 
-    i = 0
-    while i+1 < len(doc):
-        token = doc[i]
-        next_token = doc[i+1]
-        if do_lower:
-            curr_bigram = (token.text.lower(), next_token.text.lower())
-            bigrams.append(curr_bigram)
-        else:
-            curr_bigram = (token.text, next_token.text)
-            bigrams.append(curr_bigram)
-        i += 1
-    
+    bigrams = list( zip(unigram_1, unigram_2) )
     return bigrams
 
-def get_trigrams(doc, do_lower=True):
-    trigrams = []
 
-    i = 0
-    while i+2 < len(doc):
-        token = doc[i]
-        second_tok = doc[i+1]
-        third_tok = doc[i+2]
-        if do_lower:
-            curr_trigram = (token.text.lower(), second_tok.text.lower(), third_tok.text.lower())
-            trigrams.append(curr_trigram)
-        else:
-            curr_trigram = (token.text, second_tok.text, third_tok.txt)
-            trigrams.append(curr_trigram)
-        i += 1
-    
-    return trigrams
+def get_trigrams(doc, do_lower=True):
+    unigram_1 = get_unigrams(doc)   # pop the last two elem
+    unigram_1.pop(len(unigram_1)-1)
+    unigram_1.pop(len(unigram_1)-1)
+
+    unigram_2 = get_unigrams(doc)   # pop the front and back elem
+    unigram_2.pop(len(unigram_2)-1)
+    unigram_2.pop(0)
+
+    unigram_3 = get_unigrams(doc)   # pop first two elems
+    unigram_3.pop(0)
+    unigram_3.pop(0)
+
+    bigrams = list( zip(unigram_1, unigram_2, unigram_3) )
+    return bigrams
 
 def compare(train, test, unique=False):
-    pass
+    test_count = 0
+    for item, count in test.items():
+        if item not in train:
+            if unique:
+                test_count += 1
+            else:
+                test_count += count
+    
+    test_total = 0
+    if unique:
+        test_total = len(test.items())
+    else:
+        test_total = test.total()
+
+    return (test_count, test_total)
+        
 
 def do_experiment(args, attribute, train_value, test_value): 
     """Print a pandoc-compatible table of experiment results"""
@@ -95,7 +97,7 @@ def do_experiment(args, attribute, train_value, test_value):
 
     print("| Order | Type/Token | Total | Zeros | % Zeros | ")
     print("| ----  | ---------- | ----- | ----- | ------- | ")
-    table_row = "| Unigram | {typetoken} | {total} | {zeros} | {pct:.1%} | "
+    table_row = "| Bigram | {typetoken} | {total} | {zeros} | {pct:.1%} | "
 
     for do_types in (True, False):
         typetoken = "Type" if do_types else "Token" 
@@ -108,10 +110,26 @@ def main(args):
     # the path: /courses/cs159/data/patronize/patronize_sample.xml
 
     counter = get_examples(args.examples, 'condescension', 'true')
-    # print(counter.most_common(20))
-    print("the: " + counter['the'])
-    print("opportunity: " + counter['opportunity'])
-    print("zero: " + counter['zero'])
+    print("the: " + str(counter['the']))
+    print("opportunity: " + str(counter['opportunity']))
+    print("zero: " + str(counter['zero']))
+
+    # Testing compare()
+    compare(Counter(['a','b','c']), Counter(['c','d','d']), unique=True)
+    compare(Counter(['a','b','c']), Counter(['c','d','d']), unique=False)
+
+    # print("Appear in condenscending (true) examples, don't appear in neutral (false) examples.")
+    # do_experiment(args.examples, 'condescension', 'false', 'true')
+
+    # print("Appear in neutral (false) examples, don't appear in condenscending (true) examples.")
+    # do_experiment(args.examples, 'condescension', 'true', 'false')
+
+    print("Appear in b examples, don't appear in a examples.")
+    do_experiment(args.examples, 'randomchunk', 'a', 'b')
+
+    print("Appear in a examples, don't appear in b examples.")
+    do_experiment(args.examples, 'randomchunk', 'b', 'a')
+    
 
 
 if __name__ == '__main__':
